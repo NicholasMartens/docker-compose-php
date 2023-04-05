@@ -1,0 +1,65 @@
+version: '3.9'
+
+services:
+  cli:
+    build:
+      args:
+        user: user
+        uid: 1000
+      context: .
+      dockerfile: docker/Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - mysql
+    networks:
+      - dev-network
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - cli
+    ports:
+      - "8000:80"
+    networks:
+      - dev-network
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - '${FORWARD_DB_PORT:-3306}:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    networks:
+      - dev-network
+    volumes:
+      - mysql-database:/var/lib/mysql
+
+  redis:
+    image: redis:5.0.7-alpine
+    ports:
+      - "${FORWARD_REDIS_PORT:-6379}:6379"
+    networks:
+      - dev-network
+    volumes:
+      - 'redis-database:/data'
+
+networks:
+  dev-network:
+    driver: bridge
+
+volumes:
+  mysql-database:
+    driver: local
+  redis-database:
+    driver: local

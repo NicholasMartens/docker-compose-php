@@ -1,0 +1,10 @@
+{
+    "name": "user/php-upgrade",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "User\\PhpUpgrade\\": "src/"
+        }
+    },
+    "require": {}
+}
