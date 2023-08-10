@@ -12,11 +12,11 @@ In this repo there is a Laravel 10 branch. To get started with this branch run t
 
 `git checkout laravel10`
 
-`docker compose up`
+`docker compose up -d`
 
 `docker compose exec cli composer install`
 
-`docker compose exec cli php artisan key generate`
+`docker compose exec cli php artisan key:generate`
 
 `docker compose exec cli php artisan migrate`
 
