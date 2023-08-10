@@ -1,64 +1,70 @@
-version: '3.9'
+version: "3.9"
 
 services:
-  cli:
-    build:
-      args:
-        user: user
-        uid: 1000
-      context: .
-      dockerfile: docker/Dockerfile
-    restart: unless-stopped
-    working_dir: /var/www/
-    volumes:
-      - ./:/var/www
-    depends_on:
-      - mysql
-    networks:
-      - dev-network
+    cli:
+        build:
+            args:
+                user: user
+                uid: 1000
+            context: .
+            dockerfile: docker/Dockerfile
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        depends_on:
+            - postgres
+        networks:
+            - shared_network_cjspy
 
-  nginx:
-    image: nginx:stable-alpine
-    volumes:
-      - ./:/var/www/html
-      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - cli
-    ports:
-      - "8000:80"
-    networks:
-      - dev-network
+    nginx:
+        image: nginx:stable-alpine
+        volumes:
+            - ./:/var/www/html
+            - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - cli
+        ports:
+            - "8000:80"
+        networks:
+            - shared_network_cjspy
 
-  mysql:
-    image: mysql:8.0
-    ports:
-      - '${FORWARD_DB_PORT:-3306}:3306'
-    environment:
-      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-      MYSQL_DATABASE: '${DB_DATABASE}'
-      MYSQL_USER: '${DB_USERNAME}'
-      MYSQL_PASSWORD: '${DB_PASSWORD}'
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-    networks:
-      - dev-network
-    volumes:
-      - mysql-database:/var/lib/mysql
+    postgres:
+        image: postgres:15.3
+        ports:
+            - "${FORWARD_DB_PORT:-5432}:5432"
+        environment:
+            POSTGRES_PASSWORD: "${DB_PASSWORD}"
+            POSTGRES_DB: "${DB_DATABASE}"
+            POSTGRES_USER: "${DB_USERNAME}"
+        networks:
+            - shared_network_cjspy
+        volumes:
+            - postgres-database:/var/lib/postgresql/data
 
-  redis:
-    image: redis:5.0.7-alpine
-    ports:
-      - "${FORWARD_REDIS_PORT:-6379}:6379"
-    networks:
-      - dev-network
-    volumes:
-      - 'redis-database:/data'
+    redis:
+        image: redis:5.0.7-alpine
+        ports:
+            - "${FORWARD_REDIS_PORT:-6379}:6379"
+        networks:
+            - shared_network_cjspy
+        volumes:
+            - "redis-database:/data"
+
+    mailhog:
+        image: "mailhog/mailhog:latest"
+        ports:
+            - "${FORWARD_MAILHOG_PORT:-1025}:1025"
+            - "${FORWARD_MAILHOG_DASHBOARD_PORT:-8025}:8025"
+        networks:
+            - shared_network_cjspy
 
 networks:
-  dev-network:
-    driver: bridge
+    shared_network_cjspy:
+        external: true
 
 volumes:
-  mysql-database:
-    driver: local
-  redis-database:
-    driver: local
+    postgres-database:
+        driver: local
+    redis-database:
+        driver: local
