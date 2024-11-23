@@ -4,6 +4,9 @@ FROM php:8.3-fpm
 ARG user
 ARG uid
 
+# Set environment variables
+ENV NODE_VERSION=20
+
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -20,7 +23,15 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libzip-dev \
     libpq-dev \
-    libicu-dev   # Add libicu-dev for intl extension
+    libicu-dev \
+    libcurl4-openssl-dev \
+    pkg-config \
+    libssl-dev \
+    librabbitmq-dev \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get install -y nodejs
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
