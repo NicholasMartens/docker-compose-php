@@ -12,9 +12,9 @@ In this repo there is a Laravel 10 branch. To get started with this branch run t
 
 `cd docker-compose-php8.1/`
 
-`git fetch origin laravel10-postgres`
+`git fetch origin laravel11-postgres`
 
-`git checkout laravel10-postgres`
+`git checkout laravel11-postgres`
 
 `docker compose up -d`
 
